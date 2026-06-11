@@ -29,24 +29,33 @@ const DATA = path.join(__dirname, 'data');
 const groups = JSON.parse(fs.readFileSync(path.join(DATA, 'groups.json'), 'utf8'));
 const GROUPS = Object.keys(groups);
 
-// Host-city UTC offset during the tournament (June–July 2026).
-// US/Canada cities observe daylight time; Mexican cities do not.
-const CITY_OFFSET = {
-  'Mexico City': -6, Guadalajara: -6, Monterrey: -6, // Mexico, no DST
-  Vancouver: -7, Seattle: -7, 'Los Angeles': -7, 'San Francisco': -7, 'Santa Clara': -7, // PDT
-  Dallas: -5, Houston: -5, 'Kansas City': -5, // CDT
-  Atlanta: -4, Miami: -4, 'Miami Gardens': -4, Toronto: -4, Boston: -4, Foxborough: -4,
-  'New York': -4, 'New York/NJ': -4, 'East Rutherford': -4, Philadelphia: -4, // EDT
-};
+// UTC offset of each venue's timezone during the tournament (June–July 2026).
+// US/Canada cities observe daylight time; Mexican venues use CST (no DST).
 const DEFAULT_OFFSET = -6; // fall back to Mexico City time
+function tzOffset(tz) {
+  if (!tz) return DEFAULT_OFFSET;
+  if (tz.includes('MX')) return -6;        // Mexico CST, no DST
+  if (tz.startsWith('ET')) return -4;      // EDT
+  if (tz.startsWith('CT')) return -5;      // CDT
+  if (tz.startsWith('MT')) return -6;      // MDT
+  if (tz.startsWith('PT')) return -7;      // PDT
+  return DEFAULT_OFFSET;
+}
 
-// Convert "2026-06-11" + "12:00" at a city to a UTC ISO string.
-function localToUtcISO(dateStr, timeStr, city) {
+// Convert a venue-local date + time + tz to a UTC ISO string.
+function localToUtcISO(dateStr, timeStr, tz) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const [hh, mm] = (timeStr || '12:00').split(':').map(Number);
-  const off = CITY_OFFSET[city] ?? DEFAULT_OFFSET; // e.g. -4
+  const off = tzOffset(tz); // e.g. -4
   // local = UTC + off  =>  UTC = local - off
   return new Date(Date.UTC(y, m - 1, d, hh - off, mm)).toISOString();
+}
+
+// Some sources abbreviate team names; map them to the names in groups.json.
+const ALIASES = { usa: 'United States', 'u.s.a.': 'United States', 'united states of america': 'United States' };
+function normalize(s) {
+  const n = String(s).trim().toLowerCase();
+  return ALIASES[n] ? ALIASES[n].toLowerCase() : n;
 }
 
 // Map a team name to its group team code (e.g. "Mexico" -> "A1").
@@ -54,7 +63,6 @@ const teamToCode = {};
 for (const g of GROUPS) {
   groups[g].forEach((name, i) => { teamToCode[normalize(name)] = `${g}${i + 1}`; });
 }
-function normalize(s) { return String(s).trim().toLowerCase(); }
 
 const ROUND_ORDER = { Group: 0, R32: 1, R16: 2, QF: 3, SF: 4, '3RD': 5, FINAL: 6 };
 
@@ -94,7 +102,7 @@ function seedMatchesFromSchedule(schedule) {
       home_name: homeCode ? null : (mtch.home || 'TBD'),
       away_name: awayCode ? null : (mtch.away || 'TBD'),
       venue,
-      kickoff_at: localToUtcISO(mtch.date, mtch.timeLocal, mtch.city),
+      kickoff_at: localToUtcISO(mtch.date, mtch.timeLocal, mtch.tz),
     });
   }
   return seq;
@@ -145,7 +153,7 @@ function seedMatches() {
 
 function seedBonusQuestions() {
   // Lock bonus questions at the tournament start (first kickoff, 11 Jun 2026).
-  const lockAt = localToUtcISO('2026-06-11', '12:00', 'Mexico City');
+  const lockAt = localToUtcISO('2026-06-11', '13:00', 'MX (CST)');
   const insert = db.prepare(`
     INSERT INTO bonus_questions (seq, prompt, points, answer_count, lock_at, correct_answer)
     VALUES (?, ?, ?, ?, ?, NULL)

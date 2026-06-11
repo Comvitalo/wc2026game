@@ -100,18 +100,32 @@ Sign in with the **Admin PIN** on the login screen. From the Admin tab you can:
 
 ---
 
-## The WC 2026 fixture skeleton
+## The WC 2026 fixtures
 
-The seed creates the full **48-team / 104-match** structure:
+The seed loads the **real 48-team / 104-match** tournament:
 
 - **72** group-stage matches (12 groups A–L × 6),
 - **16** Round of 32, **8** Round of 16, **4** quarter-finals,
   **2** semi-finals, **1** third-place match, **1** final.
 
-Teams and kickoff times are sensible **placeholders** spread across
-11 Jun – 19 Jul 2026 (Mexico City time). The admin replaces team names and
-exact kickoff times with the official schedule. Per-match locking keys off each
-match's `kickoff_at`, so set those correctly for locking to be accurate.
+Data lives in two files under `data/`:
+
+- **`groups.json`** — the 12 groups with the actual teams from the December 2025
+  final draw.
+- **`schedule.json`** — every match with its real date, venue/stadium, matchup,
+  and kickoff time. Local kickoff times are converted to UTC using each venue's
+  summer offset (Mexican venues CST/UTC−6 with no DST; US & Canadian venues on
+  daylight time). Per-match locking keys off each match's `kickoff_at`.
+
+Knockout matches are seeded with the correct dates and venues but `TBD` teams
+(and bracket-slot labels like *Winner A* / *Runner-up B*); the admin fills in
+the real teams as the bracket resolves.
+
+> Note: a few group-stage kickoff *times* may be off by an hour pending the
+> final official confirmation — dates, venues and matchups are accurate. Adjust
+> any time in the admin panel; it updates that match's lock instantly.
+
+To re-import after editing `data/*.json`, run `npm run reset`.
 
 ---
 
