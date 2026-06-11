@@ -12,6 +12,12 @@ RUN npm ci --omit=dev
 
 COPY . .
 
+# Recompile native modules (better-sqlite3) for THIS image's architecture, in
+# case a host-built node_modules slipped into the build context. Without this,
+# a macOS/arm64 binary copied from the host fails on Linux with "invalid ELF
+# header" at runtime.
+RUN npm rebuild better-sqlite3 --build-from-source
+
 # --- Runtime stage: slim image, no compilers ---
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
