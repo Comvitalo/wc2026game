@@ -140,7 +140,6 @@ async function loadMatches() {
            <input type="number" min="0" max="99" value="${m.myTip ? m.myTip.home : ''}" data-mid="${m.id}" data-side="home" />
            <span class="vs">:</span>
            <input type="number" min="0" max="99" value="${m.myTip ? m.myTip.away : ''}" data-mid="${m.id}" data-side="away" />
-           <button class="btn btn-sm" data-savetip="${m.id}">${m.myTip ? 'Saved ✓' : 'Save'}</button>
          </span>`;
 
     let reveal = '';
@@ -164,6 +163,7 @@ async function loadMatches() {
         ${resultOrInputs}
         <span class="team away">${m.away}</span>
       </div>
+      ${m.locked ? '' : `<div class="save-row"><button class="btn btn-sm" data-savetip="${m.id}">${m.myTip ? 'Saved ✓' : 'Save'}</button></div>`}
       ${reveal}`;
     host.appendChild(el);
   }

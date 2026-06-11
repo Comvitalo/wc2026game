@@ -129,6 +129,8 @@ input:focus, select:focus {
 .score-inputs { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
 .score-inputs input { width: 50px; text-align: center; padding: 7px; font-weight: 700; }
 
+.save-row { text-align: center; margin-top: 12px; }
+
 /* Bonus answer fields: roomy text inputs (not the tiny score boxes) */
 .bonus-answers { display: flex; gap: 8px; flex-wrap: wrap; }
 .bonus-answers input { flex: 1 1 180px; min-width: 150px; max-width: 280px; }
