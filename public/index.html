@@ -50,6 +50,7 @@
       <button class="tab active" data-tab="matches">Matches &amp; Tips</button>
       <button class="tab" data-tab="bonus">Bonus</button>
       <button class="tab" data-tab="leaderboard">Leaderboard</button>
+      <button class="tab" data-tab="rules">Rules</button>
       <button class="tab admin-only hidden" data-tab="admin">Admin</button>
     </nav>
 
@@ -65,6 +66,30 @@
 
     <div id="tab-leaderboard" class="tabpanel hidden">
       <div id="leaderboard"></div>
+    </div>
+
+    <div id="tab-rules" class="tabpanel hidden">
+      <section class="card">
+        <h2>How points work</h2>
+        <h3>Match tips</h3>
+        <p>For every match you predict the exact score (e.g. <strong>3:2</strong>). When the match kicks off your tip locks and is compared to the real result:</p>
+        <table>
+          <thead><tr><th>Your tip vs. the real result</th><th class="num">Points</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Exact result</strong> — you got the score spot on (tip 3:2, result 3:2)</td><td class="num"><strong id="rule-exact">5</strong></td></tr>
+            <tr><td><strong>Correct goal difference</strong> — right margin, wrong score (tip 2:1, result 3:2)</td><td class="num"><strong id="rule-diff">3</strong></td></tr>
+            <tr><td><strong>Correct tendency</strong> — right winner or a draw, but wrong margin</td><td class="num"><strong id="rule-tendency">1</strong></td></tr>
+            <tr><td><strong>Wrong</strong> — wrong winner / predicted the wrong outcome</td><td class="num">0</td></tr>
+          </tbody>
+        </table>
+        <p class="hint">A correct goal difference always counts as the higher score, not just a tendency. Two different draws (tip 1:1, result 2:2) count as a correct goal difference.</p>
+
+        <h3 style="margin-top:18px">Bonus questions</h3>
+        <p>Season-long predictions (winner, finalists, top scorer, …). Each question shows its own points value on the Bonus tab. For multi-answer questions (e.g. the four semi-finalists) you earn the points <strong>for each correct pick</strong>. Bonus answers lock at the tournament start.</p>
+
+        <h3 style="margin-top:18px">Privacy &amp; locking</h3>
+        <p>Your tips and bonus answers are <strong>private</strong> — nobody else can see them. Each match tip locks at that match's kickoff; at that moment it's frozen and everyone's tips for that match are revealed. You can keep tipping later matches after the tournament has started.</p>
+      </section>
     </div>
 
     <div id="tab-admin" class="tabpanel hidden">

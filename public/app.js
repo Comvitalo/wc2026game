@@ -46,6 +46,12 @@ async function refreshMe() {
   $('loginView').classList.add('hidden');
   $('appView').classList.remove('hidden');
   document.querySelectorAll('.admin-only').forEach((el) => el.classList.toggle('hidden', !me.isAdmin));
+  // Keep the Rules tab in sync with the configured scoring values.
+  if (me.points) {
+    $('rule-exact').textContent = me.points.exact;
+    $('rule-diff').textContent = me.points.diff;
+    $('rule-tendency').textContent = me.points.tendency;
+  }
 }
 
 function logout() {
