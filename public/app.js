@@ -138,6 +138,7 @@ async function loadMatches() {
            <input type="number" min="0" max="99" value="${m.myTip ? m.myTip.home : ''}" data-mid="${m.id}" data-side="home" />
            <span class="vs">:</span>
            <input type="number" min="0" max="99" value="${m.myTip ? m.myTip.away : ''}" data-mid="${m.id}" data-side="away" />
+           <button class="btn btn-sm" data-savetip="${m.id}">${m.myTip ? 'Saved ✓' : 'Save'}</button>
          </span>`;
 
     let reveal = '';
@@ -165,9 +166,13 @@ async function loadMatches() {
     host.appendChild(el);
   }
 
-  // Auto-save tips on change
-  host.querySelectorAll('input[data-mid]').forEach((inp) => {
-    inp.onchange = () => saveTip(inp.dataset.mid, host);
+  // Save tips on button click. Typing marks the tip as unsaved.
+  host.querySelectorAll('[data-savetip]').forEach((btn) => {
+    const mid = btn.dataset.savetip;
+    btn.onclick = () => saveTip(mid, host, btn);
+    host.querySelectorAll(`input[data-mid="${mid}"]`).forEach((inp) => {
+      inp.oninput = () => { btn.textContent = 'Save'; btn.classList.add('unsaved'); };
+    });
   });
 }
 
@@ -176,12 +181,13 @@ function tipLine(name, h, a, pts) {
   return `<div class="tip-line"><span>${name}: <strong>${h} : ${a}</strong></span>${ptsHtml}</div>`;
 }
 
-async function saveTip(mid, host) {
+async function saveTip(mid, host, btn) {
   const home = host.querySelector(`input[data-mid="${mid}"][data-side="home"]`).value;
   const away = host.querySelector(`input[data-mid="${mid}"][data-side="away"]`).value;
-  if (home === '' || away === '') return;
+  if (home === '' || away === '') { toast('Enter both scores first'); return; }
   try {
     await api(`/api/matches/${mid}/tip`, { method: 'PUT', body: JSON.stringify({ home, away }) });
+    if (btn) { btn.textContent = 'Saved ✓'; btn.classList.remove('unsaved'); }
     toast('Tip saved');
   } catch (e) { toast(e.message); }
 }

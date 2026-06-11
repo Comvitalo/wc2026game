@@ -78,8 +78,9 @@ input, select {
 .team { font-weight: 600; }
 .team.home { text-align: right; }
 .team.away { text-align: left; }
-.score-inputs { display: flex; align-items: center; gap: 6px; }
+.score-inputs { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
 .score-inputs input { width: 48px; text-align: center; padding: 6px; }
+.btn-sm.unsaved { background: var(--warn); }
 .vs { color: var(--muted); }
 .result { color: var(--accent2); font-weight: 700; }
 .tips-reveal { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 0.88rem; }
