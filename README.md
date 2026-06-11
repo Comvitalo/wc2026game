@@ -161,7 +161,7 @@ fly auth login
 fly apps create wc2026-tippspiel
 
 # 2. Create the persistent volume for the SQLite file (1 GB is plenty)
-fly volumes create wc2026_data --region qro --size 1
+fly volumes create wc2026_data --region dfw --size 1
 
 # 3. Set the PINs as secrets so defaults never ship publicly
 fly secrets set ADMIN_PIN=xxxx PIN_ALI=xxxx PIN_ALEX=xxxx PIN_WILL=xxxx

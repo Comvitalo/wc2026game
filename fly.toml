@@ -2,7 +2,7 @@
 # Rename `app` to something globally unique (or let `fly launch` set it).
 
 app = "wc2026-tippspiel"
-primary_region = "qro"   # Querétaro, Mexico (closest Fly region to Mexico City)
+primary_region = "dfw"   # Dallas, USA (closest available Fly region to Mexico City; qro is deprecated)
 
 [build]
   dockerfile = "Dockerfile"
