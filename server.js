@@ -15,6 +15,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 3000;
 const now = () => new Date().toISOString();
 
+// Health check for the platform (Fly) load balancer.
+app.get('/healthz', (req, res) => res.json({ ok: true }));
+
 // ---------------------------------------------------------------------------
 // Settings helpers
 // ---------------------------------------------------------------------------

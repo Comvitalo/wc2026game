@@ -170,10 +170,12 @@ function seedBonusQuestions() {
 }
 
 function seedPlayers() {
+  // PINs can be supplied via env (e.g. Fly secrets) on first seed; otherwise
+  // the documented defaults are used. Change them before sharing publicly.
   const insert = db.prepare('INSERT INTO players (name, pin_hash, is_admin) VALUES (?, ?, 0)');
-  insert.run('Ali', hashPin('1111'));
-  insert.run('Alex', hashPin('2222'));
-  insert.run('Will', hashPin('3333'));
+  insert.run('Ali', hashPin(process.env.PIN_ALI || '1111'));
+  insert.run('Alex', hashPin(process.env.PIN_ALEX || '2222'));
+  insert.run('Will', hashPin(process.env.PIN_WILL || '3333'));
 }
 
 function seedSettings() {
@@ -181,7 +183,7 @@ function seedSettings() {
   set.run('points_exact', '5');
   set.run('points_diff', '3');
   set.run('points_tendency', '1');
-  set.run('admin_pin_hash', hashPin('9999')); // shared admin PIN — CHANGE THIS
+  set.run('admin_pin_hash', hashPin(process.env.ADMIN_PIN || '9999')); // shared admin PIN
   set.run('timezone', 'America/Mexico_City');
 }
 

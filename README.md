@@ -148,6 +148,53 @@ copying that one file.
 
 ---
 
+## Deploying to Fly.io
+
+The app ships with a `Dockerfile` and `fly.toml`. SQLite needs a **persistent
+volume** and a **single instance**, both configured here. Database lives at
+`/data/tippspiel.db` on a mounted volume that survives deploys and restarts.
+
+**One-time setup** (with the [flyctl](https://fly.io/docs/flyctl/install/) CLI):
+
+```bash
+fly auth login
+
+# 1. Create the app (pick a globally-unique name and set it as `app` in fly.toml)
+fly apps create wc2026-tippspiel
+
+# 2. Create the persistent volume for the SQLite file (1 GB is plenty)
+fly volumes create wc2026_data --region qro --size 1
+
+# 3. Set the PINs as secrets so defaults never ship publicly
+fly secrets set ADMIN_PIN=xxxx PIN_ALI=xxxx PIN_ALEX=xxxx PIN_WILL=xxxx
+
+# 4. Deploy, and pin to exactly one machine (SQLite can't be shared)
+fly deploy
+fly scale count 1
+
+fly open
+```
+
+On first boot the container runs `node seed.js` (idempotent — creates the
+schema and fills empty tables) and then starts the server. The PIN secrets are
+applied on that first seed.
+
+**Day-to-day:**
+
+- **Back up the database:** `fly ssh console -C "cat /data/tippspiel.db" > backup.db`
+  (or `fly sftp get /data/tippspiel.db`).
+- **Change a PIN later:** `fly secrets set ...` only affects a *fresh* seed; to
+  change an existing PIN, update the hash in the DB (see *Default PINs* above)
+  via `fly ssh console`.
+- **Re-import fixtures after editing `data/*.json`:** redeploy, then
+  `fly ssh console -C "node /app/seed.js --reset"`. **Warning:** `--reset` wipes
+  all tips, answers and results — only do this before the tournament starts.
+- **Keep it single-instance:** never `fly scale count` above 1.
+
+> The same `Dockerfile` runs anywhere (Railway, Render with a disk, a VPS via
+> `docker run -v wc2026_data:/data -e DB_PATH=/data/tippspiel.db -p 3000:3000`).
+> Just ensure one instance and a persistent `/data`.
+
 ## Notes
 - Auth is intentionally lightweight (name + PIN) for a 3-player private game.
 - The server enforces all privacy/locking rules; the browser never receives

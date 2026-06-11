@@ -1,0 +1,37 @@
+# Fly.io configuration for the WC 2026 Tippspiel.
+# Rename `app` to something globally unique (or let `fly launch` set it).
+
+app = "wc2026-tippspiel"
+primary_region = "qro"   # Querétaro, Mexico (closest Fly region to Mexico City)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  DB_PATH = "/data/tippspiel.db"
+
+# Persistent volume for the SQLite database (survives deploys/restarts).
+[mounts]
+  source = "wc2026_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Single instance only — SQLite cannot be shared across machines.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+# Small machine is plenty for three players.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

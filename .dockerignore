@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+tippspiel.db
+tippspiel.db-journal
+tippspiel.db-wal
+tippspiel.db-shm
+.git
+.gitignore
+*.log
+.DS_Store
+.env
+fly.toml
