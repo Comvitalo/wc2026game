@@ -223,7 +223,7 @@ async function loadBonus() {
         <span class="badge ${q.locked ? 'locked' : 'open'}">${q.locked ? 'Locked' : 'Open'}</span>
       </div>
       <div class="team" style="margin-bottom:8px">${q.prompt}</div>
-      <div class="score-inputs" style="flex-wrap:wrap">${inputs.join('')}</div>
+      <div class="bonus-answers">${inputs.join('')}</div>
       ${reveal}`;
     host.appendChild(el);
   }

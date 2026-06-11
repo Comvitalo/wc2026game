@@ -128,6 +128,10 @@ input:focus, select:focus {
 .team.away { text-align: left; }
 .score-inputs { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
 .score-inputs input { width: 50px; text-align: center; padding: 7px; font-weight: 700; }
+
+/* Bonus answer fields: roomy text inputs (not the tiny score boxes) */
+.bonus-answers { display: flex; gap: 8px; flex-wrap: wrap; }
+.bonus-answers input { flex: 1 1 180px; min-width: 150px; max-width: 280px; }
 .vs { color: var(--muted); }
 .result { color: var(--accent2); font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .tips-reveal { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; font-size: 0.9rem; }
