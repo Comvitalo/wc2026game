@@ -1,0 +1,8 @@
+node_modules/
+tippspiel.db
+tippspiel.db-journal
+tippspiel.db-wal
+tippspiel.db-shm
+*.log
+.DS_Store
+.env

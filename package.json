@@ -1,0 +1,18 @@
+{
+  "name": "wc2026-tippspiel",
+  "version": "1.0.0",
+  "description": "World Cup 2026 prediction game (Tippspiel) for Ali, Alex and Will",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "reset": "node seed.js --reset",
+    "test": "node test/scoring.test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2"
+  }
+}

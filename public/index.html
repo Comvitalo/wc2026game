@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WC 2026 Tippspiel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>⚽ WC 2026 Tippspiel</h1>
+    <div id="userbar" class="userbar hidden">
+      <span id="whoami"></span>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <section id="loginView" class="card">
+    <h2>Sign in</h2>
+    <div class="login-grid">
+      <div>
+        <h3>Player</h3>
+        <label>Name
+          <select id="loginName">
+            <option value="Ali">Ali</option>
+            <option value="Alex">Alex</option>
+            <option value="Will">Will</option>
+          </select>
+        </label>
+        <label>PIN
+          <input id="loginPin" type="password" inputmode="numeric" placeholder="PIN" />
+        </label>
+        <button id="loginBtn" class="btn">Sign in</button>
+      </div>
+      <div>
+        <h3>Admin</h3>
+        <label>Admin PIN
+          <input id="adminPin" type="password" inputmode="numeric" placeholder="Admin PIN" />
+        </label>
+        <button id="adminBtn" class="btn">Open admin panel</button>
+      </div>
+    </div>
+    <p id="loginError" class="error"></p>
+  </section>
+
+  <!-- App -->
+  <main id="appView" class="hidden">
+    <nav class="tabs">
+      <button class="tab active" data-tab="matches">Matches &amp; Tips</button>
+      <button class="tab" data-tab="bonus">Bonus</button>
+      <button class="tab" data-tab="leaderboard">Leaderboard</button>
+      <button class="tab admin-only hidden" data-tab="admin">Admin</button>
+    </nav>
+
+    <div id="tab-matches" class="tabpanel">
+      <p class="hint">Your tip is private until kickoff. At kickoff it locks and everyone's tips are revealed.</p>
+      <div id="matchList"></div>
+    </div>
+
+    <div id="tab-bonus" class="tabpanel hidden">
+      <p class="hint">Bonus answers lock at tournament start.</p>
+      <div id="bonusList"></div>
+    </div>
+
+    <div id="tab-leaderboard" class="tabpanel hidden">
+      <div id="leaderboard"></div>
+    </div>
+
+    <div id="tab-admin" class="tabpanel hidden">
+      <h2>Admin</h2>
+      <section class="card">
+        <h3>Match results &amp; details</h3>
+        <p class="hint">Set the real score to award points. Edit knockout team names / kickoff times here.</p>
+        <div id="adminMatches"></div>
+      </section>
+      <section class="card">
+        <h3>Team names (group stage)</h3>
+        <p class="hint">Rename a placeholder once you know the team — it updates all its group games.</p>
+        <div id="adminTeams"></div>
+      </section>
+      <section class="card">
+        <h3>Bonus questions</h3>
+        <p class="hint">Enter the correct answer(s) once known to award points.</p>
+        <div id="adminBonus"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
