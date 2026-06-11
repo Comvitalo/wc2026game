@@ -47,14 +47,14 @@
   <!-- App -->
   <main id="appView" class="hidden">
     <nav class="tabs">
-      <button class="tab active" data-tab="matches">Matches &amp; Tips</button>
+      <button class="tab active" data-tab="leaderboard">🏆 Leaderboard</button>
+      <button class="tab" data-tab="matches">Matches &amp; Tips</button>
       <button class="tab" data-tab="bonus">Bonus</button>
-      <button class="tab" data-tab="leaderboard">Leaderboard</button>
       <button class="tab" data-tab="rules">Rules</button>
       <button class="tab admin-only hidden" data-tab="admin">Admin</button>
     </nav>
 
-    <div id="tab-matches" class="tabpanel">
+    <div id="tab-matches" class="tabpanel hidden">
       <p class="hint">Your tip is private until kickoff. At kickoff it locks and everyone's tips are revealed.</p>
       <div id="matchList"></div>
     </div>
@@ -64,7 +64,7 @@
       <div id="bonusList"></div>
     </div>
 
-    <div id="tab-leaderboard" class="tabpanel hidden">
+    <div id="tab-leaderboard" class="tabpanel">
       <div id="leaderboard"></div>
     </div>
 

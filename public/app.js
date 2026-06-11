@@ -104,8 +104,10 @@ document.querySelectorAll('.tab').forEach((tab) => {
 });
 
 function loadAll() {
-  if (me.player) { loadMatches(); loadBonus(); }
-  else { // admin-only login: jump to admin tab
+  if (me.player) {
+    // Leaderboard is the landing tab; load everything so switching is instant.
+    loadLeaderboard(); loadMatches(); loadBonus();
+  } else { // admin-only login: jump to admin tab
     document.querySelector('[data-tab="admin"]').click();
   }
 }
@@ -245,19 +247,34 @@ async function saveBonus(qid, host) {
 async function loadLeaderboard() {
   const board = await api('/api/leaderboard');
   const host = $('leaderboard');
-  const rows = board.map((b, i) => `
-    <tr class="${me.player && b.player === me.player.name ? 'me' : ''}">
-      <td>${i + 1}</td><td>${b.player}</td>
-      <td class="num">${b.total}</td>
-      <td class="num">${b.matchPoints}</td>
-      <td class="num">${b.bonusPoints}</td>
-      <td class="num">${b.exact}/${b.diff}/${b.tendency}</td>
-    </tr>`).join('');
+  const medals = ['🥇', '🥈', '🥉'];
+  const leader = board.length ? board[0].total : 0;
+
+  const rows = board.map((b, i) => {
+    const isMe = me.player && b.player === me.player.name;
+    const rankCls = i < 3 ? ` rank-${i + 1}` : '';
+    const badge = medals[i] || `${i + 1}`;
+    // a subtle bar showing each player's share of the leader's total
+    const pct = leader > 0 ? Math.round((b.total / leader) * 100) : 0;
+    return `
+      <div class="lb-row${rankCls}${isMe ? ' me' : ''}">
+        <div class="lb-rank">${badge}</div>
+        <div class="lb-main">
+          <div class="lb-name">${b.player}${isMe ? ' <span class="you">you</span>' : ''}</div>
+          <div class="lb-bar"><span style="width:${pct}%"></span></div>
+          <div class="lb-break">
+            <span title="points from match tips">⚽ ${b.matchPoints} match</span>
+            <span title="points from bonus questions">⭐ ${b.bonusPoints} bonus</span>
+            <span class="lb-hits">${b.exact}× exact · ${b.diff}× diff · ${b.tendency}× tend</span>
+          </div>
+        </div>
+        <div class="lb-total"><span class="lb-total-num">${b.total}</span><span class="lb-total-lbl">pts</span></div>
+      </div>`;
+  }).join('');
+
   host.innerHTML = `
-    <table>
-      <thead><tr><th>#</th><th>Player</th><th class="num">Total</th><th class="num">Match</th><th class="num">Bonus</th><th class="num">Exact/Diff/Tend</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+    <h2 class="lb-title">🏆 Leaderboard</h2>
+    <div class="lb-list">${rows}</div>
     <p class="hint">Points count only for matches with an entered result and resolved bonus questions.</p>`;
 }
 
