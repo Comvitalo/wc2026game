@@ -159,12 +159,10 @@ function seedBonusQuestions() {
     VALUES (?, ?, ?, ?, ?, NULL)
   `);
   const questions = [
-    ['Who will win the World Cup?', 15, 1],
-    ['Which two teams will reach the final?', 8, 2],
-    ['Which four teams will reach the semi-finals?', 5, 4],
-    ['Who will be the top scorer of the tournament?', 10, 1],
-    ['Which team scores the most goals in the group stage?', 6, 1],
-    ['Which of us three wins the Tippspiel (most points)?', 5, 1],
+    ['Who will win the World Cup?', 5, 1],
+    ['Which four teams will reach the semi-finals?', 2, 4],
+    ['Who will be the top scorer of the tournament?', 5, 1],
+    ['Which team scores the most goals in the group stage?', 5, 1],
   ];
   questions.forEach((q, i) => insert.run(i + 1, q[0], q[1], q[2], lockAt));
 }
@@ -180,8 +178,8 @@ function seedPlayers() {
 
 function seedSettings() {
   const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
-  set.run('points_exact', '5');
-  set.run('points_diff', '3');
+  set.run('points_exact', '3');
+  set.run('points_diff', '2');
   set.run('points_tendency', '1');
   set.run('admin_pin_hash', hashPin(process.env.ADMIN_PIN || '9999')); // shared admin PIN
   set.run('timezone', 'America/Mexico_City');

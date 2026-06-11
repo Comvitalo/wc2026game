@@ -17,8 +17,8 @@ Each player tips an exact score (e.g. `3:2`) for every match.
 
 | Outcome | Points |
 |---|---|
-| **Exact result** (tip `3:2`, actual `3:2`) | **5** |
-| **Correct goal difference** (tip `2:1`, actual `3:2`) | **3** |
+| **Exact result** (tip `3:2`, actual `3:2`) | **3** |
+| **Correct goal difference** (tip `2:1`, actual `3:2`) | **2** |
 | **Correct tendency** (right winner or draw, wrong difference) | **1** |
 | **Wrong tendency** | **0** |
 
@@ -35,12 +35,10 @@ Point values are configurable in the `settings` table (`points_exact`,
 ### Bonus questions
 Season-long predictions worth extra points, locked at **tournament start**:
 
-- Who will win the World Cup? (15 pts)
-- Which two teams reach the final? (8 pts each)
-- Which four teams reach the semi-finals? (5 pts each)
-- Who is the top scorer? (10 pts)
-- Which team scores the most group-stage goals? (6 pts)
-- Which of us wins the Tippspiel? (5 pts)
+- Who will win the World Cup? (5 pts)
+- Which four teams reach the semi-finals? (2 pts each, max 8)
+- Who is the top scorer? (5 pts)
+- Which team scores the most group-stage goals? (5 pts)
 
 Multi-answer questions award the points **per correct pick**. The admin enters
 the correct answer once it's known and points are awarded automatically.
