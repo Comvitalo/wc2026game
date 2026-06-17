@@ -103,6 +103,8 @@ document.querySelectorAll('.tab').forEach((tab) => {
   };
 });
 
+$('jumpCurrentBtn').onclick = jumpToCurrent;
+
 function loadAll() {
   if (me.player) {
     // Leaderboard is the landing tab; load everything so switching is instant.
@@ -115,11 +117,40 @@ function loadAll() {
 // ---------------------------------------------------------------------------
 // Matches & tips
 // ---------------------------------------------------------------------------
+// Decide which match counts as "current" so the jump button has a target.
+// Matches arrive sorted by kickoff time, so we scan once and prefer:
+//   1. a game that is live now (kicked off within a full-match window, no result yet)
+//   2. otherwise the next match that hasn't kicked off yet
+//   3. otherwise (tournament finished) the very last match
+function pickCurrentMatchId(matches) {
+  const now = Date.now();
+  const LIVE_MS = 130 * 60 * 1000; // 90' + half-time + stoppage buffer
+  let live = null;
+  let upcoming = null;
+  for (const m of matches) {
+    const ko = new Date(m.kickoffAt).getTime();
+    if (!live && ko <= now && now <= ko + LIVE_MS && !m.played) live = m;
+    if (!upcoming && ko > now) upcoming = m;
+  }
+  const target = live || upcoming || matches[matches.length - 1];
+  return target ? target.id : null;
+}
+
+function jumpToCurrent() {
+  const el = $('currentGame');
+  if (!el) { toast('No matches to jump to'); return; }
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('current-highlight');
+  void el.offsetWidth; // force reflow so the animation restarts on repeat clicks
+  el.classList.add('current-highlight');
+}
+
 async function loadMatches() {
   const matches = await api('/api/matches');
   const host = $('matchList');
   host.innerHTML = '';
   let lastGroupKey = null;
+  const currentId = pickCurrentMatchId(matches);
 
   for (const m of matches) {
     const groupKey = m.round === 'Group' ? 'Group Stage' : m.roundLabel;
@@ -133,6 +164,7 @@ async function loadMatches() {
 
     const el = document.createElement('div');
     el.className = 'match' + (m.locked ? ' locked' : '');
+    if (m.id === currentId) el.id = 'currentGame';
 
     const resultOrInputs = m.locked
       ? `<span class="result">${m.played ? `${m.result.home} : ${m.result.away}` : '— : —'}</span>`
