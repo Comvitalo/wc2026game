@@ -134,14 +134,14 @@ apply the Round of 32 teams to an existing deployment without wiping anything,
 run the idempotent migration:
 
 ```bash
-node migrate-r32.js        # locally
-fly ssh console -C "node /app/migrate-r32.js"   # on Fly
+node migrate-ko.js        # locally
+fly ssh console -C "node /app/migrate-ko.js"   # on Fly
 ```
 
 It matches each R32 fixture by its original bracket-slot label (e.g. *Winner H*
-/ *Runner-up J*), fills in the real teams, and corrects the one kickoff time
-that needed it (Spain vs Austria, 12:00 PT). Player tips and results are
-untouched.
+/ *Runner-up J*), fills in the real teams, and corrects the two kickoff times
+that needed it (Spain vs Austria → 12:00 PT, and the Dallas semi-final → 14:00
+CT / 3 p.m. ET). Player tips and results are untouched.
 
 ---
 

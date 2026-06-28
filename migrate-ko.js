@@ -1,22 +1,30 @@
 'use strict';
 
 /**
- * One-off migration that fills the Round of 32 knockout matches with the
- * actual teams now that the group stage is over (the seed only fills empty
- * tables, so it cannot change a live database).
+ * One-off migration that brings the knockout fixtures in line with the
+ * official FIFA 2026 schedule now that the group stage is over (the seed only
+ * fills empty tables, so it cannot change a live database).
  *
- *   node migrate-r32.js
+ *   node migrate-ko.js
  *
- * Idempotent — safe to run more than once. Each R32 match is matched by its
- * original bracket-slot labels (e.g. "Winner H" vs "Runner-up J"); once a slot
- * has been filled with real teams it no longer matches and is left untouched.
+ * Idempotent — safe to run more than once. It does two things:
  *
- * It also corrects one kickoff time: Spain vs Austria (SoFi Stadium, 2 Jul) was
- * stored as 15:00 PT but kicks off at 12:00 PT (3 p.m. ET). Dates, venues and
- * all other kickoff times were already correct and are left as-is.
+ *   1. Fills the 16 Round of 32 matches with the real qualified teams. Each is
+ *      matched by its original bracket-slot labels (e.g. "Winner H" vs
+ *      "Runner-up J"); once a slot has been filled it no longer matches and is
+ *      left untouched.
+ *
+ *   2. Corrects two kickoff times that were stored wrong (an ET/CT/PT mix-up):
+ *        - Spain vs Austria (SoFi, 2 Jul): 15:00 PT -> 12:00 PT (3 p.m. ET)
+ *        - Semi-final (AT&T Stadium, Dallas, 14 Jul): 19:00 CT -> 14:00 CT
+ *          (3 p.m. ET). This game still has TBD teams; only the time changes.
+ *
+ * All other knockout dates, venues and kickoff times were already correct
+ * (verified against the official bracket and host-city schedules) and are left
+ * as-is. The Round of 16 -> final matchups stay TBD until the bracket resolves.
  *
  * Team names match data/groups.json exactly so they read consistently across
- * the app. Sources: official FIFA 2026 bracket / broadcaster schedules.
+ * the app. Player tips and results are never touched.
  */
 
 const { db, init } = require('./db');
@@ -86,6 +94,21 @@ const run = db.transaction(() => {
     filled++;
   }
   console.log(`\nRound of 32: ${filled} filled, ${skipped} skipped.`);
+
+  // Correct the Dallas semi-final kickoff (19:00 CT -> 14:00 CT / 3 p.m. ET).
+  // Matched by round + venue so it works whether or not the teams are filled.
+  const sfKickoff = localToUtcISO('2026-07-14', '14:00', 'CT');
+  const sf = db.prepare(
+    "SELECT id, kickoff_at FROM matches WHERE round = 'SF' AND venue LIKE '%AT&T%'"
+  ).get();
+  if (!sf) {
+    console.log('  skip   Dallas semi-final time (match not found)');
+  } else if (sf.kickoff_at === sfKickoff) {
+    console.log('  ok     Dallas semi-final time already correct');
+  } else {
+    db.prepare('UPDATE matches SET kickoff_at = ? WHERE id = ?').run(sfKickoff, sf.id);
+    console.log(`  set    Dallas semi-final kickoff -> ${sfKickoff}`);
+  }
 });
 
 run();
