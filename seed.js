@@ -181,6 +181,7 @@ function seedPlayers() {
   insert.run('Ali', hashPin(process.env.PIN_ALI || '1111'));
   insert.run('Alex', hashPin(process.env.PIN_ALEX || '2222'));
   insert.run('Will', hashPin(process.env.PIN_WILL || '3333'));
+  insert.run('Jeff', hashPin(process.env.PIN_JEFF || '4444'));
 }
 
 function seedSettings() {
@@ -215,7 +216,7 @@ function main() {
   if (count('teams') === 0) { seedTeams(); console.log(`Seeded ${count('teams')} teams.`); }
   if (count('matches') === 0) { seedMatches(); }
   if (count('bonus_questions') === 0) { seedBonusQuestions(); console.log('Seeded bonus questions.'); }
-  if (count('players') === 0) { seedPlayers(); console.log('Seeded players: Ali, Alex, Will.'); }
+  if (count('players') === 0) { seedPlayers(); console.log('Seeded players: Ali, Alex, Will, Jeff.'); }
   if (count('settings') === 0) { seedSettings(); console.log('Seeded settings.'); }
 
   console.log('Done.');

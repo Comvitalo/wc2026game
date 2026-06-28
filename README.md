@@ -1,7 +1,7 @@
 # ⚽ WC 2026 Tippspiel
 
-A small prediction game (Tippspiel) for the 2026 World Cup, for three players:
-**Ali, Alex, and Will**. Each player predicts the score of every match; points
+A small prediction game (Tippspiel) for the 2026 World Cup, for four players:
+**Ali, Alex, Will, and Jeff**. Each player predicts the score of every match; points
 are awarded for accuracy. Bonus questions (winner, finalists, top scorer, …)
 give extra points.
 
@@ -70,6 +70,7 @@ Seeded for first use; change them before sharing the link.
 | Player | Ali | `1111` |
 | Player | Alex | `2222` |
 | Player | Will | `3333` |
+| Player | Jeff | `4444` |
 | **Admin panel** | — | `9999` |
 
 To change PINs, update the hashes (see `auth.hashPin`) — e.g.:
@@ -144,7 +145,8 @@ run the idempotent migration:
 ```bash
 node migrate-ko.js        # 1. fill Round-of-32 teams + fix two kickoff times
 node migrate-bracket.js   # 2. wire up automatic knockout advancement
-# on Fly: fly ssh console -C "node /app/migrate-ko.js && node /app/migrate-bracket.js"
+node migrate-add-jeff.js  # 3. add the player Jeff
+# on Fly: fly ssh console -C "node /app/migrate-ko.js && node /app/migrate-bracket.js && node /app/migrate-add-jeff.js"
 ```
 
 - `migrate-ko.js` matches each R32 fixture by its original bracket-slot label
@@ -154,8 +156,15 @@ node migrate-bracket.js   # 2. wire up automatic knockout advancement
 - `migrate-bracket.js` adds the bracket columns and tags every knockout match
   with its slot and feeder sources, so winners advance automatically from then
   on. It reads the topology from `data/schedule.json`.
+- `migrate-add-jeff.js` adds the player **Jeff** (PIN from `PIN_JEFF`, default
+  `4444`).
 
-Both are idempotent, safe to re-run, and never touch player tips or results.
+All three are idempotent, safe to re-run, and never touch player tips or
+results.
+
+The **Leaderboard** has an **All games / KO round only** toggle: "All games"
+ranks by overall points (every match tip + bonus), while "KO round only" ranks
+by points from knockout-round (R32 onward) match tips alone.
 
 ---
 

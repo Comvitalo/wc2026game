@@ -263,6 +263,8 @@ app.get('/api/leaderboard', auth, (req, res) => {
   const board = players.map((p) => {
     let matchPts = 0;
     let exact = 0, diff = 0, tendency = 0;
+    // Knockout-only buckets (rounds other than 'Group').
+    let koPts = 0, koExact = 0, koDiff = 0, koTendency = 0;
     for (const m of matches) {
       const tip = tips.find((t) => t.player_id === p.id && t.match_id === m.id);
       if (!tip) continue;
@@ -271,6 +273,12 @@ app.get('/api/leaderboard', auth, (req, res) => {
       if (s === pts.exact) exact++;
       else if (s === pts.diff) diff++;
       else if (s === pts.tendency) tendency++;
+      if (m.round !== 'Group') {
+        koPts += s;
+        if (s === pts.exact) koExact++;
+        else if (s === pts.diff) koDiff++;
+        else if (s === pts.tendency) koTendency++;
+      }
     }
     let bonusPts = 0;
     for (const q of questions) {
@@ -284,6 +292,9 @@ app.get('/api/leaderboard', auth, (req, res) => {
       matchPoints: matchPts,
       bonusPoints: bonusPts,
       exact, diff, tendency,
+      // Knockout-rounds-only ranking (match tips from R32 onward; no bonus).
+      koPoints: koPts,
+      koExact, koDiff, koTendency,
     };
   });
 

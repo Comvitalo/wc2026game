@@ -276,38 +276,65 @@ async function saveBonus(qid, host) {
 // ---------------------------------------------------------------------------
 // Leaderboard
 // ---------------------------------------------------------------------------
+let lbBoard = null;     // last fetched leaderboard data
+let lbMode = 'all';     // 'all' = overall total, 'ko' = knockout rounds only
+
 async function loadLeaderboard() {
-  const board = await api('/api/leaderboard');
+  lbBoard = await api('/api/leaderboard');
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
   const host = $('leaderboard');
+  if (!lbBoard) return;
+  const ko = lbMode === 'ko';
   const medals = ['🥇', '🥈', '🥉'];
-  const leader = board.length ? board[0].total : 0;
+
+  // Rank by the active metric (overall total, or knockout-only points).
+  const board = [...lbBoard].sort((a, b) => (ko ? b.koPoints - a.koPoints : b.total - a.total));
+  const leader = board.length ? (ko ? board[0].koPoints : board[0].total) : 0;
 
   const rows = board.map((b, i) => {
     const isMe = me.player && b.player === me.player.name;
     const rankCls = i < 3 ? ` rank-${i + 1}` : '';
     const badge = medals[i] || `${i + 1}`;
-    // a subtle bar showing each player's share of the leader's total
-    const pct = leader > 0 ? Math.round((b.total / leader) * 100) : 0;
+    const score = ko ? b.koPoints : b.total;
+    // a subtle bar showing each player's share of the leader's score
+    const pct = leader > 0 ? Math.round((score / leader) * 100) : 0;
+    const breakdown = ko
+      ? `<span title="points from knockout match tips">🏆 ${b.koPoints} KO match</span>
+         <span class="lb-hits">${b.koExact}× exact · ${b.koDiff}× diff · ${b.koTendency}× tend</span>`
+      : `<span title="points from match tips">⚽ ${b.matchPoints} match</span>
+         <span title="points from bonus questions">⭐ ${b.bonusPoints} bonus</span>
+         <span class="lb-hits">${b.exact}× exact · ${b.diff}× diff · ${b.tendency}× tend</span>`;
     return `
       <div class="lb-row${rankCls}${isMe ? ' me' : ''}">
         <div class="lb-rank">${badge}</div>
         <div class="lb-main">
           <div class="lb-name">${b.player}${isMe ? ' <span class="you">you</span>' : ''}</div>
           <div class="lb-bar"><span style="width:${pct}%"></span></div>
-          <div class="lb-break">
-            <span title="points from match tips">⚽ ${b.matchPoints} match</span>
-            <span title="points from bonus questions">⭐ ${b.bonusPoints} bonus</span>
-            <span class="lb-hits">${b.exact}× exact · ${b.diff}× diff · ${b.tendency}× tend</span>
-          </div>
+          <div class="lb-break">${breakdown}</div>
         </div>
-        <div class="lb-total"><span class="lb-total-num">${b.total}</span><span class="lb-total-lbl">pts</span></div>
+        <div class="lb-total"><span class="lb-total-num">${score}</span><span class="lb-total-lbl">pts</span></div>
       </div>`;
   }).join('');
 
+  const note = ko
+    ? 'Knockout view: only points from Round-of-32-onward match tips (no group games, no bonus).'
+    : 'Overall: all match tips plus resolved bonus questions.';
+
   host.innerHTML = `
     <h2 class="lb-title">🏆 Leaderboard</h2>
+    <div class="lb-modes">
+      <button class="lb-mode-btn${ko ? '' : ' active'}" data-mode="all">All games</button>
+      <button class="lb-mode-btn${ko ? ' active' : ''}" data-mode="ko">KO round only</button>
+    </div>
     <div class="lb-list">${rows}</div>
-    <p class="hint">Points count only for matches with an entered result and resolved bonus questions.</p>`;
+    <p class="hint">${note}</p>`;
+
+  host.querySelectorAll('.lb-mode-btn').forEach((btn) => {
+    btn.onclick = () => { lbMode = btn.dataset.mode; renderLeaderboard(); };
+  });
 }
 
 // ---------------------------------------------------------------------------
