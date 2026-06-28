@@ -5,6 +5,7 @@ const express = require('express');
 const { db, init } = require('./db');
 const { hashPin, verifyPin, newToken } = require('./auth');
 const { scoreTip, scoreBonus } = require('./scoring');
+const { recomputeBracket } = require('./bracket');
 
 init();
 
@@ -302,6 +303,10 @@ app.get('/api/admin/matches', auth, adminOnly, (req, res) => {
     home: sideName(m, 'home', names), away: sideName(m, 'away', names),
     venue: m.venue, kickoffAt: m.kickoff_at,
     homeScore: m.home_score, awayScore: m.away_score,
+    // Knockout bracket: `derived` means the teams come from earlier winners and
+    // are filled automatically, so the admin sets only the score (+ who
+    // advanced if it went to penalties).
+    slot: m.slot, derived: !!(m.home_src || m.away_src), advance: m.advance_side,
   })));
 });
 
@@ -319,6 +324,16 @@ app.put('/api/admin/matches/:id', auth, adminOnly, (req, res) => {
     return res.status(400).json({ error: 'Invalid away score' });
   }
 
+  // Who advances on penalties (only meaningful for knockout ties). '' clears it.
+  let advanceSide;
+  if (b.advance === undefined) advanceSide = m.advance_side; // unchanged
+  else if (b.advance === 'home' || b.advance === 'away') advanceSide = b.advance;
+  else advanceSide = null;
+
+  // For derived knockout slots the teams come from the bracket, so ignore any
+  // submitted names; for everything else a submitted name overrides.
+  const derived = !!(m.home_src || m.away_src);
+
   db.prepare(`
     UPDATE matches SET
       home_name  = COALESCE(@home_name, home_name),
@@ -326,17 +341,21 @@ app.put('/api/admin/matches/:id', auth, adminOnly, (req, res) => {
       venue      = COALESCE(@venue, venue),
       kickoff_at = COALESCE(@kickoff_at, kickoff_at),
       home_score = @home_score,
-      away_score = @away_score
+      away_score = @away_score,
+      advance_side = @advance_side
     WHERE id = @id
   `).run({
     id: m.id,
-    home_name: b.home ?? null,
-    away_name: b.away ?? null,
+    home_name: derived ? null : (b.home ?? null),
+    away_name: derived ? null : (b.away ?? null),
     venue: b.venue ?? null,
     kickoff_at: b.kickoffAt ?? null,
     home_score: homeScore,
     away_score: awayScore,
+    advance_side: advanceSide,
   });
+  // Propagate the (possibly new) winner/loser into the next knockout games.
+  recomputeBracket(db);
   res.json({ ok: true });
 });
 

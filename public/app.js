@@ -319,8 +319,20 @@ async function loadAdmin() {
   ]);
 
   // Matches: result + (knockout) name/time edit
+  // - group games: fixed teams (have a team code)
+  // - derived knockout games (R16+): teams come from the bracket automatically
+  // - R32 knockout games: editable names
+  // Knockout games that feed a later game show a "who advanced" picker, used
+  // when the tie is settled on penalties (level score can't name a winner).
   $('adminMatches').innerHTML = matches.map((m) => {
-    const editNames = !m.homeCode; // knockout slots have no team code
+    const editNames = !m.homeCode && !m.derived;
+    const canAdvance = ['R32', 'R16', 'QF', 'SF'].includes(m.round);
+    const advanceSel = canAdvance ? `
+        <select data-am="${m.id}" data-f="advance" title="If the tie went to penalties, who advanced?" style="margin-left:6px">
+          <option value="">advances: by score</option>
+          <option value="home" ${m.advance === 'home' ? 'selected' : ''}>adv: ${escapeAttr(m.home)} (pens)</option>
+          <option value="away" ${m.advance === 'away' ? 'selected' : ''}>adv: ${escapeAttr(m.away)} (pens)</option>
+        </select>` : '';
     return `
     <div class="admin-row">
       <span class="label">${m.roundLabel} · ${fmtTime(m.kickoffAt)}<br/>
@@ -329,6 +341,7 @@ async function loadAdmin() {
              vs
              <input type="text" value="${escapeAttr(m.away)}" data-am="${m.id}" data-f="away" style="width:120px" />`
           : `<strong>${m.home}</strong> vs <strong>${m.away}</strong>`}
+        ${advanceSel}
       </span>
       <input type="number" min="0" placeholder="-" value="${m.homeScore ?? ''}" data-am="${m.id}" data-f="homeScore" style="width:52px" />
       <span class="vs">:</span>
@@ -346,8 +359,12 @@ async function loadAdmin() {
       };
       const body = { homeScore: get('homeScore'), awayScore: get('awayScore') };
       if (get('home') !== undefined) { body.home = get('home'); body.away = get('away'); }
-      try { await api(`/api/admin/matches/${id}`, { method: 'PUT', body: JSON.stringify(body) }); toast('Match saved'); }
-      catch (e) { toast(e.message); }
+      if (get('advance') !== undefined) body.advance = get('advance');
+      try {
+        await api(`/api/admin/matches/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        toast('Match saved');
+        loadAdmin(); // refresh so bracket-advanced teams show up downstream
+      } catch (e) { toast(e.message); }
     };
   });
 

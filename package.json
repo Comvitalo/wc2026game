@@ -8,7 +8,7 @@
     "start": "node server.js",
     "seed": "node seed.js",
     "reset": "node seed.js --reset",
-    "test": "node test/scoring.test.js"
+    "test": "node test/scoring.test.js && node test/bracket.test.js"
   },
   "license": "MIT",
   "dependencies": {

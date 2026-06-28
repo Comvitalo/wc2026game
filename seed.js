@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const { db, init } = require('./db');
 const { hashPin } = require('./auth');
+const { recomputeBracket } = require('./bracket');
 
 const RESET = process.argv.includes('--reset');
 const DATA = path.join(__dirname, 'data');
@@ -75,8 +76,8 @@ function seedTeams() {
 
 function seedMatchesFromSchedule(schedule) {
   const insert = db.prepare(`
-    INSERT INTO matches (round, seq, home_code, away_code, home_name, away_name, venue, kickoff_at)
-    VALUES (@round, @seq, @home_code, @away_code, @home_name, @away_name, @venue, @kickoff_at)
+    INSERT INTO matches (round, seq, home_code, away_code, home_name, away_name, venue, kickoff_at, slot, home_src, away_src)
+    VALUES (@round, @seq, @home_code, @away_code, @home_name, @away_name, @venue, @kickoff_at, @slot, @home_src, @away_src)
   `);
   // Order by date/time, then by round.
   const sorted = [...schedule].sort((a, b) => {
@@ -103,6 +104,9 @@ function seedMatchesFromSchedule(schedule) {
       away_name: awayCode ? null : (mtch.away || 'TBD'),
       venue,
       kickoff_at: localToUtcISO(mtch.date, mtch.timeLocal, mtch.tz),
+      slot: mtch.slot || null,
+      home_src: mtch.homeSrc || null,
+      away_src: mtch.awaySrc || null,
     });
   }
   return seq;
@@ -149,6 +153,9 @@ function seedMatches() {
     const n = seedSkeleton();
     console.log(`Seeded ${n} matches from skeleton (no schedule.json found yet).`);
   }
+  // Fill knockout matchups from any results already present (none on a first
+  // seed, but keeps placeholders like "Winner of …" consistent).
+  recomputeBracket(db);
 }
 
 function seedBonusQuestions() {

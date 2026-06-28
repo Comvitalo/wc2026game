@@ -41,7 +41,11 @@ function init() {
       venue       TEXT,
       kickoff_at  TEXT NOT NULL,           -- ISO 8601 UTC; lock = now >= kickoff_at
       home_score  INTEGER,                 -- actual result (null until played)
-      away_score  INTEGER
+      away_score  INTEGER,
+      slot        TEXT,                    -- bracket slot id, e.g. 'R32-1', 'QF-3', 'FINAL'
+      home_src    TEXT,                    -- '<W|L>:<slot>' feeder for knockout games
+      away_src    TEXT,
+      advance_side TEXT                    -- 'home'|'away' when a tie is decided on penalties
     );
 
     CREATE TABLE IF NOT EXISTS tips (
@@ -83,6 +87,22 @@ function init() {
     CREATE INDEX IF NOT EXISTS idx_tips_match  ON tips(match_id);
     CREATE INDEX IF NOT EXISTS idx_matches_seq ON matches(seq);
   `);
+
+  ensureColumns('matches', {
+    slot: 'TEXT',
+    home_src: 'TEXT',
+    away_src: 'TEXT',
+    advance_side: 'TEXT',
+  });
+}
+
+// Add any missing columns to an existing table (CREATE TABLE IF NOT EXISTS does
+// not alter a table that already exists, so older databases need this).
+function ensureColumns(table, cols) {
+  const have = new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name));
+  for (const [name, type] of Object.entries(cols)) {
+    if (!have.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+  }
 }
 
 module.exports = { db, init, DB_PATH };

@@ -90,8 +90,14 @@ Sign in with the **Admin PIN** on the login screen. From the Admin tab you can:
 
 - **Enter match results** — type the real score and Save; points recompute and
   the leaderboard updates instantly.
-- **Set knockout teams & kickoff times** — knockout matches start as `TBD`;
-  fill in the actual teams and adjust dates/times as the bracket resolves.
+- **Knockout teams advance automatically** — enter a knockout result and the
+  winner is pushed into the correct next game (R32 → R16 → quarters → semis →
+  final), with the semi-final losers dropping into the third-place game. Until a
+  game is decided its slot reads e.g. *Winner of South Africa/Canada*. If a tie
+  is settled on penalties the score is level, so pick who advanced from the
+  **advances** dropdown on that match and Save.
+- **Set knockout kickoff times** — adjust any knockout date/time if it shifts;
+  Round-of-16 teams onward are filled by the bracket, not typed in.
 - **Rename group teams** — placeholders are `Team A1 … Team L4`. Rename one and
   it updates across all of that team's group matches.
 - **Resolve bonus questions** — enter the correct answer(s), comma-separated.
@@ -117,9 +123,11 @@ Data lives in two files under `data/`:
 
 The **Round of 32** is filled in with the real teams now that the group stage
 is over (dates, kickoff times and venues confirmed against the official FIFA
-2026 bracket). The later rounds (R16 → final) are still seeded with the correct
-dates and venues but `TBD` teams; the admin fills those in as the bracket
-resolves.
+2026 bracket). The later rounds (R16 → final) keep their correct dates and
+venues, and their **teams advance automatically** from each game's result —
+every knockout slot records which earlier match's winner (or loser, for the
+third-place game) feeds it, following the official bracket. Until a feeder game
+is decided the slot shows a placeholder such as *Winner of Portugal/Croatia*.
 
 > Note: a few group-stage kickoff *times* may be off by an hour pending the
 > final official confirmation — dates, venues and matchups are accurate. Adjust
@@ -134,14 +142,20 @@ apply the Round of 32 teams to an existing deployment without wiping anything,
 run the idempotent migration:
 
 ```bash
-node migrate-ko.js        # locally
-fly ssh console -C "node /app/migrate-ko.js"   # on Fly
+node migrate-ko.js        # 1. fill Round-of-32 teams + fix two kickoff times
+node migrate-bracket.js   # 2. wire up automatic knockout advancement
+# on Fly: fly ssh console -C "node /app/migrate-ko.js && node /app/migrate-bracket.js"
 ```
 
-It matches each R32 fixture by its original bracket-slot label (e.g. *Winner H*
-/ *Runner-up J*), fills in the real teams, and corrects the two kickoff times
-that needed it (Spain vs Austria → 12:00 PT, and the Dallas semi-final → 14:00
-CT / 3 p.m. ET). Player tips and results are untouched.
+- `migrate-ko.js` matches each R32 fixture by its original bracket-slot label
+  (e.g. *Winner H* / *Runner-up J*), fills in the real teams, and corrects the
+  two kickoff times that needed it (Spain vs Austria → 12:00 PT, Dallas
+  semi-final → 14:00 CT / 3 p.m. ET).
+- `migrate-bracket.js` adds the bracket columns and tags every knockout match
+  with its slot and feeder sources, so winners advance automatically from then
+  on. It reads the topology from `data/schedule.json`.
+
+Both are idempotent, safe to re-run, and never touch player tips or results.
 
 ---
 
