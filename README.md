@@ -115,15 +115,33 @@ Data lives in two files under `data/`:
   summer offset (Mexican venues CST/UTC−6 with no DST; US & Canadian venues on
   daylight time). Per-match locking keys off each match's `kickoff_at`.
 
-Knockout matches are seeded with the correct dates and venues but `TBD` teams
-(and bracket-slot labels like *Winner A* / *Runner-up B*); the admin fills in
-the real teams as the bracket resolves.
+The **Round of 32** is filled in with the real teams now that the group stage
+is over (dates, kickoff times and venues confirmed against the official FIFA
+2026 bracket). The later rounds (R16 → final) are still seeded with the correct
+dates and venues but `TBD` teams; the admin fills those in as the bracket
+resolves.
 
 > Note: a few group-stage kickoff *times* may be off by an hour pending the
 > final official confirmation — dates, venues and matchups are accurate. Adjust
 > any time in the admin panel; it updates that match's lock instantly.
 
 To re-import after editing `data/*.json`, run `npm run reset`.
+
+### Updating an already-running database
+
+`npm run seed` only fills empty tables, so it won't touch a live database. To
+apply the Round of 32 teams to an existing deployment without wiping anything,
+run the idempotent migration:
+
+```bash
+node migrate-r32.js        # locally
+fly ssh console -C "node /app/migrate-r32.js"   # on Fly
+```
+
+It matches each R32 fixture by its original bracket-slot label (e.g. *Winner H*
+/ *Runner-up J*), fills in the real teams, and corrects the one kickoff time
+that needed it (Spain vs Austria, 12:00 PT). Player tips and results are
+untouched.
 
 ---
 
