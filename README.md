@@ -158,6 +158,8 @@ node migrate-add-jeff.js  # 3. add the player Jeff
   on. It reads the topology from `data/schedule.json`.
 - `migrate-add-jeff.js` adds the player **Jeff** (PIN from `PIN_JEFF`, default
   `4444`).
+- `migrate-ko-bonus.js` adds the four knockout-round bonus questions (3 pts
+  each), locking at the first KO game of the bracket run (Brazil vs Japan).
 
 All three are idempotent, safe to re-run, and never touch player tips or
 results.

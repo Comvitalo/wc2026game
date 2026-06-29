@@ -159,19 +159,26 @@ function seedMatches() {
 }
 
 function seedBonusQuestions() {
-  // Lock bonus questions at the tournament start (first kickoff, 11 Jun 2026).
+  // Season-long questions lock at the tournament start (first kickoff, 11 Jun).
   const lockAt = localToUtcISO('2026-06-11', '13:00', 'MX (CST)');
+  // Knockout-round questions lock at the first KO game of the bracket run
+  // (Brazil vs Japan, 29 Jun, 12:00 CT).
+  const koLock = localToUtcISO('2026-06-29', '12:00', 'CT');
   const insert = db.prepare(`
     INSERT INTO bonus_questions (seq, prompt, points, answer_count, lock_at, correct_answer)
     VALUES (?, ?, ?, ?, ?, NULL)
   `);
   const questions = [
-    ['Who will win the World Cup?', 5, 1],
-    ['Which four teams will reach the semi-finals?', 2, 4],
-    ['Who will be the top scorer of the tournament?', 5, 1],
-    ['Which team scores the most goals in the group stage?', 5, 1],
+    ['Who will win the World Cup?', 5, 1, lockAt],
+    ['Which four teams will reach the semi-finals?', 2, 4, lockAt],
+    ['Who will be the top scorer of the tournament?', 5, 1, lockAt],
+    ['Which team scores the most goals in the group stage?', 5, 1, lockAt],
+    ['How many goals will be scored across the knockout rounds? (Closest guess wins; penalty-shootout goals are not counted.)', 3, 1, koLock],
+    ['How many knockout games go to extra time? (Closest guess wins.)', 3, 1, koLock],
+    ['Which country reaches the semi-finals, other than Germany, France, Netherlands, Portugal, Spain, Brazil, England and Argentina?', 3, 1, koLock],
+    ['Who scores more goals in the knockout rounds: Ronaldo, Messi, Vinicius, Haaland, Kane or Mbappe?', 3, 1, koLock],
   ];
-  questions.forEach((q, i) => insert.run(i + 1, q[0], q[1], q[2], lockAt));
+  questions.forEach((q, i) => insert.run(i + 1, q[0], q[1], q[2], q[3]));
 }
 
 function seedPlayers() {
